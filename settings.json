@@ -1,0 +1,10 @@
+{
+    "workbench.colorTheme": "Default Dark Modern",
+    "security.workspace.trust.untrustedFiles": "open",
+    "ev3devBrowser.additionalDevices": [
+        {
+            "name": "ev3",
+            "ipAddress": "192.168.0.18"
+        }
+    ]
+}

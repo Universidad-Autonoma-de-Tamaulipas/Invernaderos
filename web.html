@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Variables ambientales dentro del invernadero</title>
+    <style>
+        /*Estilos CSS*/
+
+        #logo1 {
+            float: left; /* Alinea el primer logotipo a la izquierda */
+            max-width: 300px;
+        }
+        #logo2 {
+            float: right; /* Alinea el segundo logotipo a la derecha */
+            max-width: 300px;
+        }
+        body {
+            text-align: center; /* Centra el contenido horizontalmente */
+            font-family: Arial, sans-serif;
+
+            background: url('fondo6.png') no-repeat center center fixed;
+            background-size: cover; 
+        }
+        #title {
+            font-size: 24px; /* Tamaño de fuente para el título */
+        }
+
+    </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="header">
+        <img id="logo1" src="C:\Users\orali\Documents\paginaweb\logoFIC.png" alt="Logotipo 1">
+        <img id="logo2" src="C:\Users\orali\Documents\paginaweb\UAT.png" alt="Logotipo 2">
+    </div>
+
+    <h1>VARIABLES AMBIENTALES DENTRO DEL INVERNADERO</h1>
+    <div id="data-container1">
+        Cargando datos de Sensor 1...
+    </div>
+    
+    <div id="data-container2">
+        Cargando datos de Sensor 2...
+    </div>
+    <div id="data-container3">
+        Cargando datos de Sensor Virtual...
+    </div>
+
+
+
+    <h1>Grafica Sensor 1</h1>
+    <canvas id="chart1"></canvas>
+    <h1>Grafica Sensor 2</h1>
+    <canvas id="chart2"></canvas>
+    <!-- Botón para la descarga del archivo EXEL -->
+    <button id="download-button" onclick="downloadCSV()">Descargar datos de Sensor 1</button>
+    <button id="download-button2" onclick="downloadCSV2()">Descargar datos de Sensor 2</button>
+    <script src="C:\Users\orali\Downloads\web\COPIA_JAVA1.js"></script>
+</body>
+</html>
