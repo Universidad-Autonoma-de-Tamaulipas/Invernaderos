@@ -12,6 +12,7 @@ var url2 = `https://api.thingspeak.com/channels/${channelID2}/feeds.json?api_key
 
 var myChart;
 var myChart2;
+var myChart3;
 let sensor1Data; 
 
 // Función para cargar y mostrar los datos
@@ -19,10 +20,12 @@ function fetchData1() {
     fetch(url)
         .then(response1 => response1.json())
         .then(data1 => {
+            fetchData();
             sensor1Data=data1
             displayData1(sensor1Data);
             createOrUpdateChart1(sensor1Data);
-            fetchData();
+            
+            
         })
         .catch(error1 => {
             console1.error(error1);
@@ -34,8 +37,11 @@ function fetchData() {
         .then(response => response.json())
         .then(data => {
             displayData(data);
-            createOrUpdateChart(data);
+            //createOrUpdateChart(data);
             displayAverages(sensor1Data, data);
+            createOrUpdateChart3(sensor1Data, data);
+            createOrUpdateChart2(sensor1Data, data)
+            createOrUpdateChart1(sensor1Data, data)
         })
         .catch(error => {
             console.error(error);
@@ -91,16 +97,24 @@ function displayAverages(data, data1) {
         const latestFeed = data.feeds[data.feeds.length - 1];
         const latestFeed1 = data1.feeds[data1.feeds.length - 1];
 
-        // Calcular los promedios
-        const v1 = (latestFeed.field1 + latestFeed1.field4)/2;
-        const v2 = (latestFeed.field2 + latestFeed1.field5)/2;
-        const v3 = (latestFeed.field3 + latestFeed1.field6)/2;
+        const valor1 = parseFloat(latestFeed.field1);
+        const valor2 = parseFloat(latestFeed1.field4);
+        const valor3 = parseFloat(latestFeed.field2);
+        const valor4 = parseFloat(latestFeed1.field5);
+        const valor5 = parseFloat(latestFeed.field3);
+        const valor6 = parseFloat(latestFeed1.field6);
+
+        // Ahora suma los valores numéricos
+        const suma1 = (valor1 + valor2)/2;
+        const suma2 = (valor3 + valor4)/2;
+        const suma3 = (valor5 + valor6)/2;
+
 
         // Formatear la fecha y hora
         const utcTime = new Date(latestFeed.created_at);
         const options = { timeZone: 'America/Mexico_City' };
         const localTimeString = utcTime.toLocaleString('es-MX', options);
-        html3 += `<p>Fecha y Hora: ${localTimeString}, Promedio de Temperatura: ${v1} °C, Promedio de Humedad: ${v2}%, Promedio de Niveles de CO2: ${v3} PPM</p>`;
+        html3 += `<p>Fecha y Hora: ${localTimeString}, Temperatura: ${suma1} °C, Humedad: ${suma2}%, Niveles de CO2: ${suma3} PPM</p>`;
 
     } else {
         html3 += '<p>No hay datos disponibles para el Sensor Virtual.</p>';
@@ -108,51 +122,64 @@ function displayAverages(data, data1) {
     dataContainer3.innerHTML = html3;
 }
 
-
-function createOrUpdateChart(data) {
+function createOrUpdateChart2(data, data1) {
     var ctx2 = document.getElementById('chart1').getContext('2d');
 
-    var labels = data.feeds.map(feed => {
+    var labels1 = data.feeds.map(feed => {
         const utcTime = new Date(feed.created_at);
         const options = { timeZone: 'America/Mexico_City' };
         const localTime = utcTime.toLocaleString('es-MX', options);
-        return localTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
     });
 
-    var temperatures = data.feeds.map(feed => parseFloat(feed.field4));
-    var humidity = data.feeds.map(feed => parseFloat(feed.field5));
-    var co2Levels = data.feeds.map(feed => parseFloat(feed.field6));
+    var labels2 = data1.feeds.map(feed => {
+        const utcTime = new Date(feed.created_at);
+        const options = { timeZone: 'America/Mexico_City' };
+        const localTime = utcTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
+    });
+
+    var temperatura1 = data.feeds.map(feed => parseFloat(feed.field1));
+    var temperatura2 = data1.feeds.map(feed => parseFloat(feed.field4));
+    var suma1 = temperatura1.map((temp, index) => (temp + temperatura2[index]) / 2);  // Calcula el promedio
 
     // Mantener solo los últimos 20 puntos
-    if (labels.length > 20) {
-        labels = labels.slice(labels.length - 20);
-        temperatures = temperatures.slice(temperatures.length - 20);
-        humidity = humidity.slice(humidity.length - 20);
-        co2Levels = co2Levels.slice(co2Levels.length - 20);
+    if (labels1.length > 20) {
+        labels1 = labels1.slice(labels1.length - 20);
+        temperatura1 = temperatura1.slice(temperatura1.length - 20);
+    }
+
+    if (labels2.length > 20) {
+        labels2 = labels2.slice(labels2.length - 20);
+        temperatura2 = temperatura2.slice(temperatura2.length - 20);
+    }
+
+    if (suma1.length > 20) {
+        suma1 = suma1.slice(suma1.length - 20);
     }
 
     if (!myChart2) {
         myChart2 = new Chart(ctx2, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: labels1, // Puedes usar labels1 o labels2, ya que ambos deben tener la misma longitud
                 datasets: [
                     {
-                        label: 'Temperatura (°C)',
-                        data: temperatures,
-                        borderColor: 'rgba(255, 99, 132, 1)',
+                        label: 'Temperatura sensor2 (°C)',
+                        data: temperatura2,
+                        borderColor: 'rgba(239, 127, 26, 1)',
                         borderWidth: 2,
                     },
                     {
-                        label: 'Humedad (%)',
-                        data: humidity,
-                        borderColor: 'rgba(75, 192, 255, 1)',
+                        label: 'Temperatura sensor1 (°C)',
+                        data: temperatura1,
+                        borderColor: 'rgba(239, 127, 26, 1)',
                         borderWidth: 2,
                     },
                     {
-                        label: 'Niveles de CO2 (PPM)',
-                        data: co2Levels,
-                        borderColor: 'rgba(54, 255, 54, 1)',
+                        label: 'Temperatura Promedio (°C)',
+                        data: suma1,
+                        borderColor: 'rgba(0, 255, 255, 1)',
                         borderWidth: 2,
                     },
                 ],
@@ -166,60 +193,73 @@ function createOrUpdateChart(data) {
             },
         });
     } else {
-        myChart2.data.labels = labels;
-        myChart2.data.datasets[0].data = temperatures;
-        myChart2.data.datasets[1].data = humidity;
-        myChart2.data.datasets[2].data = co2Levels;
+        myChart2.data.labels = labels1.concat(labels2).slice(-20);  // Usa ambas etiquetas y mantiene solo los últimos 20 puntos
+        myChart2.data.datasets[0].data = temperatura1.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart2.data.datasets[1].data = temperatura2.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart2.data.datasets[2].data = suma1.slice(-20);
         myChart2.update();
     }
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function createOrUpdateChart1(data, data1) {
+    var ctx2 = document.getElementById('chart2').getContext('2d');
 
-function createOrUpdateChart1(data1) {
-    var ctx1 = document.getElementById('chart2').getContext('2d');
-
-    var labels = data1.feeds.map(feed => {
+    var labels1 = data.feeds.map(feed => {
         const utcTime = new Date(feed.created_at);
         const options = { timeZone: 'America/Mexico_City' };
         const localTime = utcTime.toLocaleString('es-MX', options);
-        return localTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
     });
 
-    var fed1 = data1.feeds.map(feed =>parseFloat(feed.field1));
-    var fed2 = data1.feeds.map(feed =>parseFloat(feed.field2));
-    var fed3 = data1.feeds.map(feed =>parseFloat(feed.field3));
+    var labels2 = data1.feeds.map(feed => {
+        const utcTime = new Date(feed.created_at);
+        const options = { timeZone: 'America/Mexico_City' };
+        const localTime = utcTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
+    });
+
+    var humedad1 = data.feeds.map(feed => parseFloat(feed.field2));
+    var humedad2 = data1.feeds.map(feed => parseFloat(feed.field5));
+    var suma2 = humedad1.map((hum, index) => (hum + humedad2[index]) / 2);  // Calcula el promedio
 
     // Mantener solo los últimos 20 puntos
-    if (labels.length > 20) {
-        labels = labels.slice(labels.length - 20);
-        fed1 = fed1.slice(fed1.length - 20);
-        fed2 = fed2.slice(fed2.length - 20);
-        fed3 = fed3.slice(fed3.length - 20);
+    if (labels1.length > 20) {
+        labels1 = labels1.slice(labels1.length - 20);
+        humedad1 = humedad1.slice(humedad1.length - 20);
     }
 
+    if (labels2.length > 20) {
+        labels2 = labels2.slice(labels2.length - 20);
+        humedad2 = humedad2.slice(humedad2.length - 20);
+    }
+
+    if (suma2.length > 20) {
+        suma2 = suma2.slice(suma2.length - 20);
+    }
 
     if (!myChart) {
-        myChart = new Chart(ctx1, {
+        myChart = new Chart(ctx2, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: labels1, // Puedes usar labels1 o labels2, ya que ambos deben tener la misma longitud
                 datasets: [
                     {
-                        label: 'Temperatura (°C)',
-                        data: fed1,
-                        borderColor: 'rgba(255, 99, 132, 1)',
+                        label: 'Humedad sensor 2 (%)',
+                        data: humedad2,
+                        borderColor: 'rgba(0, 50, 200, 1)',
                         borderWidth: 2,
                     },
                     {
-                        label: 'Humedad (%)',
-                        data: fed2,
-                        borderColor: 'rgba(75, 192, 255, 1)',
+                        label: 'Humedad sensor 1 (%)',
+                        data: humedad1,
+                        borderColor: 'rgba(0, 50,200, 1)',
                         borderWidth: 2,
                     },
                     {
-                        label: 'Niveles de CO2 (PPM)',
-                        data: fed3,
-                        borderColor: 'rgba(54, 255, 54, 1)',
+                        label: 'Humedad Promedio (%)',
+                        data: suma2,
+                        borderColor: 'rgba(0, 255, 255, 1)',
                         borderWidth: 2,
                     },
                 ],
@@ -233,13 +273,96 @@ function createOrUpdateChart1(data1) {
             },
         });
     } else {
-        myChart.data.labels = labels;
-        myChart.data.datasets[0].data = fed1;
-        myChart.data.datasets[1].data = fed2;
-        myChart.data.datasets[2].data = fed3;
+        myChart.data.labels = labels1.concat(labels2).slice(-20);  // Usa ambas etiquetas y mantiene solo los últimos 20 puntos
+        myChart.data.datasets[0].data = humedad1.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart.data.datasets[1].data = humedad2.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart.data.datasets[2].data = suma2.slice(-20);
         myChart.update();
     }
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+function createOrUpdateChart3(data, data1) {
+    var ctx2 = document.getElementById('chart3').getContext('2d');
+
+    var labels1 = data.feeds.map(feed => {
+        const utcTime = new Date(feed.created_at);
+        const options = { timeZone: 'America/Mexico_City' };
+        const localTime = utcTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
+    });
+
+    var labels2 = data1.feeds.map(feed => {
+        const utcTime = new Date(feed.created_at);
+        const options = { timeZone: 'America/Mexico_City' };
+        const localTime = utcTime.toLocaleString('es-MX', options);
+        return utcTime.toISOString();  // Utiliza toISOString para mantener la fecha y hora en formato ISO
+    });
+
+    var co21 = data.feeds.map(feed => parseFloat(feed.field3));
+    var co22 = data1.feeds.map(feed => parseFloat(feed.field6));
+    var suma3 = co21.map((co, index) => (co + co22[index]) / 2);  // Calcula el promedio
+
+    // Mantener solo los últimos 20 puntos
+    if (labels1.length > 20) {
+        labels1 = labels1.slice(labels1.length - 20);
+        co21 = co21.slice(co21.length - 20);
+    }
+
+    if (labels2.length > 20) {
+        labels2 = labels2.slice(labels2.length - 20);
+        co22 = co22.slice(co22.length - 20);
+    }
+
+    if (suma3.length > 20) {
+        suma3 = suma3.slice(suma3.length - 20);
+    }
+
+    if (!myChart3) {
+        myChart3 = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: labels1, // Puedes usar labels1 o labels2, ya que ambos deben tener la misma longitud
+                datasets: [
+                    {
+                        label: 'Niveles de CO2 en sensor 2 (PPM)',
+                        data: co21,
+                        borderColor: 'rgba(0, 255, 0, 1)',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Niveles de CO2 en sensor 1 (PPM)',
+                        data: co22,
+                        borderColor: 'rgba(0, 255, 0, 1)',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'CO2 Promedio (PPM)',
+                        data: suma3,
+                        borderColor: 'rgba(255, 255, 0, 1)',
+                        borderWidth: 2,
+                    },
+                ],
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    } else {
+        myChart3.data.labels = labels1.concat(labels2).slice(-20);  // Usa ambas etiquetas y mantiene solo los últimos 20 puntos
+        myChart3.data.datasets[0].data = co21.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart3.data.datasets[1].data = co22.slice(-20);  // Mantiene solo los últimos 20 puntos
+        myChart3.data.datasets[2].data = suma3.slice(-20);
+        myChart3.update();
+    }
+}
+
+
+
+
 
 
 function generateCSVContent(data) {
@@ -336,7 +459,6 @@ function downloadCSV2() {
 }
 // Agregar un listener de clic al botón para iniciar la descarga
 document.getElementById('download-button2').addEventListener('click', downloadCSV2);
-
 
 
 
